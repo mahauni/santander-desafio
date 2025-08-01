@@ -1,42 +1,65 @@
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
+from graphviz import Source # is needed to install graphviz in the docker container
+import os
+   
+from collections import OrderedDict
 
-import warnings
+def plot_graph(G):
+   A = nx.nx_agraph.to_agraph(G)
 
-# Load data
-df = pd.read_csv('data.csv', comment='#', sep=', ', header=0, engine='python')
+   os.remove('./dot/graph.dot') if os.path.exists('./dot/graph.dot') else None
+   os.remove('./image/graph.gv') if os.path.exists('./image/graph.gv') else None
 
-G = nx.DiGraph()
-G.add_weighted_edges_from(
-    df[['id', 'id_reciever', 'value']]
-        .astype({'id': str, 'id_reciever': str, 'value': float})
-        .values
-)
+   A.write('./dot/graph.dot')
+   s = Source.from_file('./dot/graph.dot')
+   s.render('./image/graph.gv', format='jpg', view=True)
 
-elarge = [(u, v) for (u, v, d) in G.edges(data=True) if d["weight"] > 500]
-esmall = [(u, v) for (u, v, d) in G.edges(data=True) if d["weight"] <= 500]
+def get_n_highest_values(data, n=2, order=False):
+    top = sorted(data.items(), key=lambda x: x[1], reverse=True)[:n]
+    if order:
+        return OrderedDict(top)
+    return dict(top)
 
-pos = nx.spring_layout(G, seed=10)  # positions for all nodes - seed for reproducibility
+def main():
+   if not os.path.isdir('./dot'):
+      os.makedirs('./dot')
 
-# nodes
-nx.draw_networkx_nodes(G, pos, node_size=700)
+   if not os.path.isdir('./image'):
+      os.makedirs('./image')
 
-# edges
-nx.draw_networkx_edges(G, pos, edgelist=elarge, width=6)
-nx.draw_networkx_edges(
-    G, pos, edgelist=esmall, width=6, alpha=0.5, edge_color="b", style="dashed"
-)
+   # Load data
+   df = pd.read_csv('data.csv', comment='#', sep=', ', header=0, engine='python')
 
-# node labels
-nx.draw_networkx_labels(G, pos, font_size=20, font_family="sans-serif")
-# edge weight labels
-edge_labels = nx.get_edge_attributes(G, "weight")
-nx.draw_networkx_edge_labels(G, pos, edge_labels)
+   G = nx.DiGraph()
+   G.add_weighted_edges_from(
+      df[['id_sender', 'id_reciever', 'value']]
+         .astype({'id_sender': str, 'id_reciever': str, 'value': float})
+         .values
+   )
 
-ax = plt.gca()
-ax.margins(0.08)
-plt.axis("off")
-plt.tight_layout()
-plt.show()
+   # isso aqui eh os nodes que tem a maior quantidade de shortest paths
+   centrality = nx.betweenness_centrality(G)
 
+   # Measures the number of edges connected to a node. Nodes with higher degree centrality are well-connected
+   # olhar os valores mais altos, pois se algum desses falhar, problemas podem acontencer
+   degree_cent = nx.degree_centrality(G)
+
+   # Measures how close a node is to all other nodes, based on the shortest paths. Higher closeness centrality means the node can reach others more quickly
+   close_cent = nx.closeness_centrality(G)
+
+   # Find affected topics if a node is removed
+   # impact = len(nx.descendants(G, 'data_structures'))
+
+   print(centrality)
+   print(get_n_highest_values(centrality))
+   print(degree_cent)
+   print(close_cent)
+   # all the weights from the edges
+   print(G.size(weight='weight'))
+   # print(impact)
+
+   # plot_graph(G)
+
+main()
