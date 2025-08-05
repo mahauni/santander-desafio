@@ -1,0 +1,11 @@
+services:
+  santander-api:
+    container_name: santander-python-api
+    ports:
+      - "5000:5000"
+    build: .
+    networks:
+      - santander
+
+networks:
+  santander:

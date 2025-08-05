@@ -1,6 +1,8 @@
+wheel
 pandas
 networkx
 matplotlib
 pygraphviz
 graphviz
 flask
+flask-cors

@@ -1,10 +1,12 @@
 from flask import Flask, jsonify, send_file
 import io
 import logging
+from flask_cors import CORS
 
 from main import make_analisis
 
 app = Flask(__name__)
+CORS(app)
 app.logger.setLevel(logging.DEBUG)
 
 
