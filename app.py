@@ -3,7 +3,7 @@ import io
 import logging
 from flask_cors import CORS
 
-from main import make_analisis
+from main import impact_on_remove, make_analisis
 
 app = Flask(__name__)
 CORS(app)
@@ -26,6 +26,13 @@ def get_image():
 @app.route("/get_analisis")
 def get_analisis():
     result = make_analisis()
+
+    return jsonify(result)
+
+
+@app.route("/get_delete_analisis/<int:id>")
+def get_delete_analisis(id):
+    result = impact_on_remove(id)
 
     return jsonify(result)
 

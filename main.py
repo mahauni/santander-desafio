@@ -25,7 +25,7 @@ def get_n_highest_values(data, n=2, order=False):
     return dict(top)
 
 
-def make_analisis():
+def populate_data():
     df = pd.read_csv("data.csv", comment="#", sep=", ", header=0, engine="python")
 
     G = nx.DiGraph()
@@ -34,6 +34,12 @@ def make_analisis():
         .astype({"id_sender": str, "id_reciever": str, "value": float})
         .values
     )
+
+    return G
+
+
+def make_analisis():
+    G = populate_data()
 
     # isso aqui eh os nodes que tem a maior quantidade de shortest paths
     centrality = nx.betweenness_centrality(G)
@@ -48,34 +54,38 @@ def make_analisis():
     # Higher closeness centrality means the node can reach others more quickly
     close_cent = nx.closeness_centrality(G)
 
-    # Find affected topics if a node is removed
-    # impact = len(nx.descendants(G, "data_structures"))
-
     # Centralize all the results to send to the frontend
     result = [
         (
             get_n_highest_values(centrality),
-            f"Esse caso de centralidade: {get_n_highest_values(centrality)}",
+            f"Esses sao os nodes mais vitais, pois eles retem bastante do trafico: {get_n_highest_values(centrality)}",
         ),
         (
             get_n_highest_values(degree_cent),
-            f"Esse caso dos nodes conectados por muitos nodes centrais: {get_n_highest_values(degree_cent)}",
+            f"Esse sao os nodes que as maiores conexoes entre nodes: {get_n_highest_values(degree_cent)}",
         ),
         (
             get_n_highest_values(close_cent),
-            f"Esse caso de nodes que tem como menor caminho os nodes centrais: {get_n_highest_values(close_cent)}",
+            f"Esse sao os nodes que estao mais pertos de todos os outros nodes: {get_n_highest_values(close_cent)}",
         ),
         (
             G.size(weight="weight"),
             f"Esse caso do valor total do mapa: {G.size(weight='weight')}",
         ),
-        # (
-        #    impact,
-        #    f"Esse caso de impacto quando node removido: {impact}",
-        # ),
     ]
 
     return result
+
+
+def impact_on_remove(id):
+    G = populate_data()
+
+    impact = nx.descendants(G, id)
+
+    return (
+        impact,
+        f"Essa e a quantidade de nodes impactados quando removido: {impact}",
+    )
 
 
 def main():
