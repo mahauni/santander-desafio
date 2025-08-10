@@ -3,11 +3,31 @@
 
 <head>
     <meta charset="UTF-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <title>Analisis Page</title>
 </head>
 
 <body>
     <h1>Analisis Page</h1>
+    <button type="button" id="retrieve">Analysis</button>
+    <br />
+    <img src="" id="analysis_img" />
 </body>
+
+<script>
+    $(document).ready(function () {
+        $('#retrieve').click(function () {
+            $.ajax({
+                url: "{{ url_for ('app_blueprint.get_image') }}",
+                type: "GET",
+                success: function (response) {
+                    $("#analysis_img").attr('src', "{{ url_for ('app_blueprint.get_image') }}");
+                },
+                error: function (xhr) {
+                }
+            });
+        });
+    });
+</script>
 
 </html>
