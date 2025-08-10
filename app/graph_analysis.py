@@ -38,7 +38,7 @@ def populate_data():
     return G
 
 
-def make_analisis():
+def make_analysis():
     G = populate_data()
 
     # isso aqui eh os nodes que tem a maior quantidade de shortest paths
@@ -95,11 +95,8 @@ def main():
     if not os.path.isdir("./image"):
         os.makedirs("./image")
 
-    result = make_analisis()
+    result = make_analysis()
 
     print(result)
 
     # plot_graph(G)
-
-
-main()
