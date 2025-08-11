@@ -9,12 +9,12 @@ from collections import OrderedDict
 def plot_graph(G):
     A = nx.nx_agraph.to_agraph(G)
 
-    os.remove("./dot/graph.dot") if os.path.exists("./dot/graph.dot") else None
-    os.remove("./image/graph.gv") if os.path.exists("./image/graph.gv") else None
+    os.remove("./../dot/graph.dot") if os.path.exists("./../dot/graph.dot") else None
+    os.remove("./../image/graph.gv") if os.path.exists("./../image/graph.gv") else None
 
-    A.write("./dot/graph.dot")
-    s = Source.from_file("./dot/graph.dot")
-    s.render("./image/graph.gv", format="jpg", view=True)
+    A.write("./../dot/graph.dot")
+    s = Source.from_file("./../dot/graph.dot")
+    s.render("./../image/graph.gv", format="jpg", view=True)
 
 
 def get_n_highest_values(data, n=2, order=False):

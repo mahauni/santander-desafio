@@ -1,33 +1,24 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <title>Analisis Page</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Analysis Page</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script type="module" src="{{ url_for('static', filename='analysis/script.js')}}"></script>
+    <link rel="stylesheet" media="all" href="{{ url_for('static', filename='analysis/style.css')}}">
 </head>
 
 <body>
-    <h1>Analisis Page</h1>
-    <button type="button" id="retrieve">Analysis</button>
-    <br />
-    <img src="" id="analysis_img" />
+    <div class="container">
+        <h1>Analysis Report</h1>
+        <p class="lead">Click the button below to view the analysis image and details.</p>
+        <button class="btn" id="showBtn">Show Analysis</button>
+        <img id="analysisImage" src="https://via.placeholder.com/500x250" alt="Analysis Image">
+        <p id="analysisText" class="analysis">This analysis shows the latest data trends based on the selected
+            parameters. The chart above demonstrates key insights and patterns.</p>
+    </div>
 </body>
-
-<script>
-    $(document).ready(function () {
-        $('#retrieve').click(function () {
-            $.ajax({
-                url: "{{ url_for ('app_blueprint.get_image') }}",
-                type: "GET",
-                success: function (response) {
-                    $("#analysis_img").attr('src', "{{ url_for ('app_blueprint.get_image') }}");
-                },
-                error: function (xhr) {
-                }
-            });
-        });
-    });
-</script>
 
 </html>
