@@ -1,4 +1,4 @@
-from flask import Blueprint
+from flask import Blueprint, url_for
 
 
 from flask import jsonify, render_template, send_file
@@ -10,13 +10,18 @@ blueprint = Blueprint("app_blueprint", __name__)
 
 
 @blueprint.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
+def login_page():
+    return render_template("login/login_page.html")
+
+
+@blueprint.route("/login", methods=["POST"])
+def login():
+    return url_for("app_blueprint.analysis")
 
 
 @blueprint.route("/analysis")
 def analysis():
-    return render_template("analysis_page.html")
+    return render_template("analysis/analysis_page.html")
 
 
 @blueprint.route("/get_image")

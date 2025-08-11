@@ -6,7 +6,8 @@ from flask_cors import CORS
 from app import blueprint
 
 template_dir = os.path.abspath("./app/templates")
-app = Flask(__name__, template_folder=template_dir)
+static_dir = os.path.abspath("./app/static")
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 app.register_blueprint(blueprint)
 
 CORS(app)
