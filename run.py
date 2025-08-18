@@ -13,6 +13,9 @@ app.register_blueprint(blueprint)
 CORS(app)
 app.logger.setLevel(logging.DEBUG)
 
+HOST = os.getenv("HOST", "127.0.0.1")
+PORT = os.getenv("PORT", "5000")
+
 
 def main():
     if not os.path.isdir("./dot"):
@@ -24,4 +27,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    app.run(debug=True, use_reloader=True)
+    app.run(host=HOST, port=int(PORT), debug=True, use_reloader=True)

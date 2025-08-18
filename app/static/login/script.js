@@ -50,7 +50,7 @@ form.addEventListener("submit", (e) => {
           loginStatus.className = "success";
           loginStatus.textContent =
             "Signed in successfully (demo). Redirecting...";
-          // window.location = response;
+          window.location = response;
         },
         error: function (_xhr) {
           loginStatus.className = "error";
