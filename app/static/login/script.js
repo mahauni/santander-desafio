@@ -38,15 +38,12 @@ form.addEventListener("submit", (e) => {
   loginStatus.textContent = "Signing in...";
 
   setTimeout(() => {
-    console.log("no timeout");
     $("#loginSubmit").on("click", function () {
-      console.log("no click");
       $.ajax({
         url: "login",
         type: "POST",
         data: postData,
         success: function (response) {
-          console.log("on success");
           loginStatus.className = "success";
           loginStatus.textContent =
             "Signed in successfully (demo). Redirecting...";

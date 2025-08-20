@@ -5,16 +5,33 @@ import os
 
 from collections import OrderedDict
 
+CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def plot_graph(G):
+
+def plot_graph(G, show_image_os):
     A = nx.nx_agraph.to_agraph(G)
 
-    os.remove("./../dot/graph.dot") if os.path.exists("./../dot/graph.dot") else None
-    os.remove("./../image/graph.gv") if os.path.exists("./../image/graph.gv") else None
+    if not os.path.isdir(CURR_DIR + "/../dot"):
+        os.makedirs(CURR_DIR + "/../dot")
 
-    A.write("./../dot/graph.dot")
-    s = Source.from_file("./../dot/graph.dot")
-    s.render("./../image/graph.gv", format="jpg", view=True)
+    if not os.path.isdir(CURR_DIR + "/../image"):
+        os.makedirs(CURR_DIR + "/../image")
+
+    (
+        os.remove(CURR_DIR + "/../dot/graph.dot")
+        if os.path.exists(CURR_DIR + "/../dot/graph.dot")
+        else None
+    )
+    (
+        os.remove(CURR_DIR + "/../image/graph.gv")
+        if os.path.exists(CURR_DIR + "/../image/graph.gv")
+        else None
+    )
+
+    A.write(CURR_DIR + "/../dot/graph.dot")
+    s = Source.from_file(CURR_DIR + "/../dot/graph.dot")
+    if show_image_os:
+        s.render(CURR_DIR + "/../image/graph.gv", format="jpg", view=True)
 
 
 def get_n_highest_values(data, n=2, order=False):
@@ -53,6 +70,8 @@ def make_analysis():
     # Measures how close a node is to all other nodes, based on the shortest paths.
     # Higher closeness centrality means the node can reach others more quickly
     close_cent = nx.closeness_centrality(G)
+
+    plot_graph(G, False)
 
     # Centralize all the results to send to the frontend
     result = [
@@ -95,8 +114,6 @@ def main():
     if not os.path.isdir("./image"):
         os.makedirs("./image")
 
-    result = make_analysis()
+    # result = make_analysis()
 
-    print(result)
-
-    # plot_graph(G)
+    # print(result)
