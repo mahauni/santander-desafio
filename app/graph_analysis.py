@@ -5,12 +5,12 @@ import os
 
 from collections import OrderedDict
 
+from utils import set_diff
+
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def plot_graph(G, show_image_os):
-    A = nx.nx_agraph.to_agraph(G)
-
     if not os.path.isdir(CURR_DIR + "/../dot"):
         os.makedirs(CURR_DIR + "/../dot")
 
@@ -28,10 +28,16 @@ def plot_graph(G, show_image_os):
         else None
     )
 
+    A = nx.nx_agraph.to_agraph(G)
+
+    A.node_attr["fixedsize"] = True
+    A.node_attr["height"] = 1.5
+    A.node_attr["width"] = 2.0
+
     A.write(CURR_DIR + "/../dot/graph.dot")
     s = Source.from_file(CURR_DIR + "/../dot/graph.dot")
-    if show_image_os:
-        s.render(CURR_DIR + "/../image/graph.gv", format="jpg", view=True)
+
+    s.render(CURR_DIR + "/../image/graph.gv", format="jpg", view=show_image_os)
 
 
 def get_n_highest_values(data, n=2, order=False):
@@ -45,6 +51,8 @@ def get_n_highest_values(data, n=2, order=False):
 def populate_data():
     df = pd.read_csv("data.csv", comment="#", sep=", ", header=0, engine="python")
 
+    df = treat_data(df)
+
     G = nx.DiGraph()
     G.add_weighted_edges_from(
         df[["id_sender", "id_reciever", "value"]]
@@ -52,7 +60,25 @@ def populate_data():
         .values
     )
 
+    G = treat_graph(G)
+
     return G
+
+
+def treat_graph(G):
+    nodes = nx.algorithms.descendants(G, "13")
+
+    nodes.add("13")
+
+    diff = set_diff([nodes, G.nodes()])
+
+    G.remove_nodes_from(diff)
+
+    return G
+
+
+def treat_data(data) -> pd.DataFrame:
+    return data.groupby(["id_sender", "id_reciever"], as_index=False)["value"].sum()
 
 
 def make_analysis():
@@ -71,7 +97,7 @@ def make_analysis():
     # Higher closeness centrality means the node can reach others more quickly
     close_cent = nx.closeness_centrality(G)
 
-    plot_graph(G, False)
+    plot_graph(G, True)
 
     # Centralize all the results to send to the frontend
     result = [
@@ -114,6 +140,9 @@ def main():
     if not os.path.isdir("./image"):
         os.makedirs("./image")
 
-    # result = make_analysis()
+    make_analysis()
 
     # print(result)
+
+
+main()
