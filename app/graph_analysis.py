@@ -5,7 +5,7 @@ import os
 
 from collections import OrderedDict
 
-from utils import set_diff
+from app.utils import set_diff
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -100,7 +100,7 @@ def make_analysis():
     # Higher closeness centrality means the node can reach others more quickly
     close_cent = nx.closeness_centrality(G)
 
-    plot_graph(G, True)
+    plot_graph(G, False)
 
     # Centralize all the results to send to the frontend
     result = [
