@@ -49,6 +49,9 @@ def get_n_highest_values(data, n=2, order=False):
 
 
 def populate_data():
+    # make later so that it transforms to json, so the transition will be easier
+    # if its uses gRPC now its a different problem that i'm wiling to use if I know
+    # they use it
     df = pd.read_csv("data.csv", comment="#", sep=", ", header=0, engine="python")
 
     df = treat_data(df)
@@ -60,15 +63,15 @@ def populate_data():
         .values
     )
 
-    G = treat_graph(G)
+    G = treat_graph(G, "13")
 
     return G
 
 
-def treat_graph(G):
-    nodes = nx.algorithms.descendants(G, "13")
+def treat_graph(G, main_node):
+    nodes = nx.algorithms.descendants(G, main_node)
 
-    nodes.add("13")
+    nodes.add(main_node)
 
     diff = set_diff([nodes, G.nodes()])
 
