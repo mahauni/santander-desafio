@@ -7,10 +7,12 @@ from collections import OrderedDict
 
 from app.utils import set_diff
 
+# from utils import set_diff
+
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def plot_graph(G, show_image_os):
+def plot_graph(G, show_image_os, imp_points):
     if not os.path.isdir(CURR_DIR + "/../dot"):
         os.makedirs(CURR_DIR + "/../dot")
 
@@ -33,6 +35,17 @@ def plot_graph(G, show_image_os):
     A.node_attr["fixedsize"] = True
     A.node_attr["height"] = 1.5
     A.node_attr["width"] = 2.0
+    A.node_attr["style"] = "filled"
+    # A.node_attr["concentrate"] = True # this will only work without labels
+    # A.node_attr["layout"] = "twopi"
+
+    for point in imp_points:
+        if not hasattr(point[0], "__iter__"):
+            continue
+
+        for id in point[0]:
+            n = A.get_node(id)
+            n.attr["fillcolor"] = point[2]
 
     A.write(CURR_DIR + "/../dot/graph.dot")
     s = Source.from_file(CURR_DIR + "/../dot/graph.dot")
@@ -63,7 +76,7 @@ def populate_data():
         .values
     )
 
-    G = treat_graph(G, "13")
+    # G = treat_graph(G, "CNPJ_00001")
 
     return G
 
@@ -81,7 +94,12 @@ def treat_graph(G, main_node):
 
 
 def treat_data(data) -> pd.DataFrame:
-    return data.groupby(["id_sender", "id_reciever"], as_index=False)["value"].sum()
+    data["value"] = data["value"].str.lstrip("R$ ")
+    data["value"] = data["value"].str.replace(",", "").astype(float)
+
+    data = data.groupby(["id_sender", "id_reciever"], as_index=False)["value"].sum()
+
+    return data
 
 
 def make_analysis():
@@ -89,38 +107,43 @@ def make_analysis():
 
     # isso aqui eh os nodes que tem a maior quantidade de shortest paths
     centrality = nx.betweenness_centrality(G)
+    centrality = get_n_highest_values(centrality)
 
     # Measures the number of edges connected to a node. Nodes
     # with higher degree centrality are well-connected
     # olhar os valores mais altos, pois se algum desses falhar,
     # problemas podem acontencer
     degree_cent = nx.degree_centrality(G)
+    degree_cent = get_n_highest_values(degree_cent)
 
     # Measures how close a node is to all other nodes, based on the shortest paths.
     # Higher closeness centrality means the node can reach others more quickly
     close_cent = nx.closeness_centrality(G)
+    close_cent = get_n_highest_values(close_cent)
 
-    plot_graph(G, False)
-
-    # Centralize all the results to send to the frontend
     result = [
         (
-            get_n_highest_values(centrality),
-            f"Esses sao os nodes mais vitais, pois eles retem bastante do trafico: {get_n_highest_values(centrality)}",
+            centrality,
+            f"Esses sao os CNPJ que tem a maior quantidade de conexoes no sistema: {centrality}",
+            "#CCCCFF",
         ),
         (
-            get_n_highest_values(degree_cent),
-            f"Esse sao os nodes que as maiores conexoes entre nodes: {get_n_highest_values(degree_cent)}",
+            degree_cent,
+            f"Esse sao os CNPJ que mais tem conexoes no sistema: {degree_cent}",
+            "#e6ccff",
         ),
         (
-            get_n_highest_values(close_cent),
-            f"Esse sao os nodes que estao mais pertos de todos os outros nodes: {get_n_highest_values(close_cent)}",
+            close_cent,
+            f"Esse sao os CNPJ que estao mais pertos de outros CNPJ no sistema: {close_cent}",
+            "#cce6ff",
         ),
         (
             G.size(weight="weight"),
             f"Esse caso do valor total do mapa: {G.size(weight='weight')}",
         ),
     ]
+
+    plot_graph(G, True, result)
 
     return result
 
@@ -146,6 +169,11 @@ def main():
     make_analysis()
 
     # print(result)
+
+    # make a a possible to color the selected node when making the analysis
+    # and when making a color.... well whatever..
+
+    # possible to make a new thing to see what hapeens when you delete certain node
 
 
 main()
