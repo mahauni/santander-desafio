@@ -124,26 +124,26 @@ def make_analysis():
     result = [
         (
             centrality,
-            f"Esses sao os CNPJ que tem a maior quantidade de conexoes no sistema: {centrality}",
+            "Esses sao os CNPJ que tem a maior quantidade de conexoes no sistema:",
             "#CCCCFF",
         ),
         (
             degree_cent,
-            f"Esse sao os CNPJ que mais tem conexoes no sistema: {degree_cent}",
+            "Esse sao os CNPJ que mais tem conexoes no sistema:",
             "#e6ccff",
         ),
         (
             close_cent,
-            f"Esse sao os CNPJ que estao mais pertos de outros CNPJ no sistema: {close_cent}",
+            "Esse sao os CNPJ que estao mais pertos de outros CNPJ no sistema:",
             "#cce6ff",
         ),
         (
             G.size(weight="weight"),
-            f"Esse caso do valor total do mapa: {G.size(weight='weight')}",
+            f"Esse caso do valor total do mapa: R$ {G.size(weight='weight')}",
         ),
     ]
 
-    plot_graph(G, True, result)
+    plot_graph(G, False, result)
 
     return result
 
