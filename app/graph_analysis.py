@@ -45,7 +45,7 @@ def plot_graph(G, show_image_os, imp_points):
 
         for id in point[0]:
             n = A.get_node(id)
-            n.attr["fillcolor"] = point[2]
+            n.attr["fillcolor"] = point[2]  # type: ignore[attr-defined]
 
     A.write(CURR_DIR + "/../dot/graph.dot")
     s = Source.from_file(CURR_DIR + "/../dot/graph.dot")
@@ -167,13 +167,3 @@ def main():
         os.makedirs("./image")
 
     make_analysis()
-
-    # print(result)
-
-    # make a a possible to color the selected node when making the analysis
-    # and when making a color.... well whatever..
-
-    # possible to make a new thing to see what hapeens when you delete certain node
-
-
-main()
