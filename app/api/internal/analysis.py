@@ -5,28 +5,26 @@ import os
 
 from collections import OrderedDict
 
-from app.utils import set_diff
-
-# from utils import set_diff
+from typing import List
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def plot_graph(G, show_image_os, imp_points):
-    if not os.path.isdir(CURR_DIR + "/../dot"):
-        os.makedirs(CURR_DIR + "/../dot")
+    if not os.path.isdir(CURR_DIR + "/../../../dot"):
+        os.makedirs(CURR_DIR + "/../../../dot")
 
-    if not os.path.isdir(CURR_DIR + "/../image"):
-        os.makedirs(CURR_DIR + "/../image")
+    if not os.path.isdir(CURR_DIR + "/../../../image"):
+        os.makedirs(CURR_DIR + "/../../../image")
 
     (
-        os.remove(CURR_DIR + "/../dot/graph.dot")
-        if os.path.exists(CURR_DIR + "/../dot/graph.dot")
+        os.remove(CURR_DIR + "/../../../dot/graph.dot")
+        if os.path.exists(CURR_DIR + "/../../../dot/graph.dot")
         else None
     )
     (
-        os.remove(CURR_DIR + "/../image/graph.gv")
-        if os.path.exists(CURR_DIR + "/../image/graph.gv")
+        os.remove(CURR_DIR + "/../../../image/graph.gv")
+        if os.path.exists(CURR_DIR + "/../../../image/graph.gv")
         else None
     )
 
@@ -47,10 +45,10 @@ def plot_graph(G, show_image_os, imp_points):
             n = A.get_node(id)
             n.attr["fillcolor"] = point[2]  # type: ignore[attr-defined]
 
-    A.write(CURR_DIR + "/../dot/graph.dot")
-    s = Source.from_file(CURR_DIR + "/../dot/graph.dot")
+    A.write(CURR_DIR + "/../../../dot/graph.dot")
+    s = Source.from_file(CURR_DIR + "/../../../dot/graph.dot")
 
-    s.render(CURR_DIR + "/../image/graph.gv", format="jpg", view=show_image_os)
+    s.render(CURR_DIR + "/../../../image/graph.gv", format="jpg", view=show_image_os)
 
 
 def get_n_highest_values(data, n=2, order=False):
@@ -79,6 +77,15 @@ def populate_data():
     # G = treat_graph(G, "CNPJ_00001")
 
     return G
+
+
+def set_diff(sets: List[set]) -> set:
+    sd = set()
+    goners = set()
+    for s in sets:
+        sd ^= s - goners
+        goners |= s - sd
+    return sd
 
 
 def treat_graph(G, main_node):
@@ -157,13 +164,3 @@ def impact_on_remove(id):
         impact,
         f"Essa e a quantidade de nodes impactados quando removido: {impact}",
     )
-
-
-def main():
-    if not os.path.isdir("./dot"):
-        os.makedirs("./dot")
-
-    if not os.path.isdir("./image"):
-        os.makedirs("./image")
-
-    make_analysis()
