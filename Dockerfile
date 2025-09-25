@@ -1,4 +1,4 @@
-FROM python:3.10.18-alpine
+FROM python:3.13.7-slim
 
 WORKDIR /app
 
@@ -8,10 +8,8 @@ RUN chmod +x ./entrypoint.sh && ./entrypoint.sh
 
 COPY ./requirements.txt .
 
-RUN pip install -r ./requirements.txt
+RUN pip install --no-cache-dir -r ./requirements.txt
 
 COPY . .
 
-EXPOSE 5000
-
-CMD python3 run.py
+CMD ["fastapi", "run", "app/main.py", "--port", "80"]

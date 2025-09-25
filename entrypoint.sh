@@ -1,9 +1,7 @@
 #!/bin/sh
 
-apk update
+apt-get update && apt-get install -y software-properties-common
+add-apt-repository universe
+apt-get update
 
-apk add build-base
-
-apk add graphviz
-
-apk add graphviz-dev
+apt-get install curl gcc graphviz graphviz-dev -y
