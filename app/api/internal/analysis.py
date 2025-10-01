@@ -3,11 +3,20 @@ import networkx as nx
 from graphviz import Source
 import os
 
-from collections import OrderedDict
+from collections import OrderedDict, deque
 
 from typing import List
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def set_diff(sets: List[set]) -> set:
+    sd = set()
+    goners = set()
+    for s in sets:
+        sd ^= s - goners
+        goners |= s - sd
+    return sd
 
 
 def plot_graph(G, show_image_os, imp_points):
@@ -59,7 +68,7 @@ def get_n_highest_values(data, n=2, order=False):
     return dict(top)
 
 
-def populate_data():
+def populate_data(full: bool, node: str, len: int):
     # make later so that it transforms to json, so the transition will be easier
     # if its uses gRPC now its a different problem that i'm wiling to use if I know
     # they use it
@@ -74,29 +83,39 @@ def populate_data():
         .values
     )
 
-    # G = treat_graph(G, "CNPJ_00001")
+    if full:
+        G = treat_graph(G, node, len)
 
     return G
 
 
-def set_diff(sets: List[set]) -> set:
-    sd = set()
-    goners = set()
-    for s in sets:
-        sd ^= s - goners
-        goners |= s - sd
-    return sd
+def get_n_level_descendants_bfs(G, node, n_levels=2):
+    """
+    Usa BFS para pegar descendentes até N níveis
+    Mais eficiente para grafos grandes
+    """
+    if node not in G:
+        return set()
+
+    visited = {node}
+    queue = deque([(node, 0)])  # (nó, nível)
+
+    while queue:
+        current_node, level = queue.popleft()
+
+        if level < n_levels:
+            for successor in G.successors(current_node):
+                if successor not in visited:
+                    visited.add(successor)
+                    queue.append((successor, level + 1))
+
+    return visited
 
 
-def treat_graph(G, main_node):
-    nodes = nx.algorithms.descendants(G, main_node)
-
-    nodes.add(main_node)
-
-    diff = set_diff([nodes, G.nodes()])
-
-    G.remove_nodes_from(diff)
-
+def treat_graph(G, main_node, n_levels=2):
+    nodes_to_keep = get_n_level_descendants_bfs(G, main_node, n_levels)
+    nodes_to_remove = set(G.nodes()) - nodes_to_keep
+    G.remove_nodes_from(nodes_to_remove)
     return G
 
 
@@ -109,8 +128,8 @@ def treat_data(data) -> pd.DataFrame:
     return data
 
 
-def make_analysis():
-    G = populate_data()
+def make_analysis(full=False, node="CNPJ_01982", len=2):
+    G = populate_data(full, node, len)
 
     # isso aqui eh os nodes que tem a maior quantidade de shortest paths
     centrality = nx.betweenness_centrality(G)
@@ -155,8 +174,8 @@ def make_analysis():
     return result
 
 
-def impact_on_remove(id):
-    G = populate_data()
+def impact_on_remove(id: int, full=False, node="CNPJ_01982", len=2):
+    G = populate_data(full, node, len)
 
     impact = nx.descendants(G, id)
 
