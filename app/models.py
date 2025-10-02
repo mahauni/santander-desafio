@@ -1,6 +1,6 @@
 import uuid
 
-from pydantic import EmailStr
+from pydantic import BaseModel, EmailStr
 from sqlmodel import Field, SQLModel
 
 
@@ -64,6 +64,11 @@ class Message(SQLModel):
 class Token(SQLModel):
     access_token: str
     token_type: str = "bearer"
+
+
+# JSON payload containing access token
+class CnpjList(BaseModel):
+    cnpjs: list[str]
 
 
 # Contents of JWT token

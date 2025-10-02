@@ -1,7 +1,8 @@
+from typing import Optional
 import uuid
 import json
 
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Query, Response
 from fastapi.responses import FileResponse, JSONResponse
 
 from app.api.internal.analysis import impact_on_remove, make_analysis
@@ -16,8 +17,15 @@ def analysis_image():
 
 
 @router.get("/make", response_class=JSONResponse)
-def get_analysis():
-    result = make_analysis()
+def get_analysis(
+    cnpj: Optional[str] = Query(
+        None, description="O cnpj principal utilizado como node principal"
+    ),
+):
+    if cnpj and cnpj != "CNPJ_00001":
+        result = make_analysis(True, cnpj)
+    else:
+        result = make_analysis()
 
     return Response(content=json.dumps(result), media_type="application/json")
 

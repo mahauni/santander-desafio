@@ -19,3 +19,11 @@ def get_value_per_types():
     )
 
     return df.groupby("type")["value_numeric"].sum().to_json()
+
+
+def get_all_cnpj_data():
+    df = get_data()
+
+    unique_cnpjs: set[str] = set(df["id_sender"]) | set(df["id_reciever"])
+
+    return sorted(unique_cnpjs)
