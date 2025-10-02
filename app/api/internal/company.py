@@ -1,6 +1,6 @@
 from google import genai
 
-client = genai.Client()
+client = genai.Client(api_key="")
 
 
 def make_company_perfil():
@@ -10,3 +10,5 @@ def make_company_perfil():
     )
 
     print(response.text)
+
+    return response.text
