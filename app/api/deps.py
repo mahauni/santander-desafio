@@ -1,6 +1,8 @@
 from collections.abc import Generator
+from functools import lru_cache
 from typing import Annotated
 
+from google import genai
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -23,9 +25,14 @@ def get_db() -> Generator[Session, None, None]:
         yield session
 
 
+@lru_cache(maxsize=1)
+def get_gemini_model() -> genai.Client:
+    return genai.Client(api_key=settings.GEMINI_API_KEY)
+
+
 SessionDep = Annotated[Session, Depends(get_db)]
 TokenDep = Annotated[str, Depends(reusable_oauth2)]
-GeminiDep = Annotated[str, Depends(reusable_oauth2)]
+GeminiDep = Annotated[genai.Client, Depends(get_gemini_model)]
 
 
 def get_current_user(session: SessionDep, token: TokenDep) -> User:
