@@ -1,7 +1,37 @@
+from datetime import datetime, date
 import uuid
 
 from pydantic import BaseModel, EmailStr
 from sqlmodel import Field, SQLModel
+
+
+# Shared properties
+class TransactionsBase(SQLModel):
+    id_pgto: str = Field()
+    id_rcbe: str = Field()
+    vl: str = Field()
+    ds_tran: str = Field()
+    dt_refe: date = Field()
+
+
+class CompaniesBase(SQLModel):
+    cnpj: str = Field()
+    vl_fatu: str = Field()
+    vl_sldo: str = Field()
+    dt_abrt: date = Field()
+    ds_cnae: str = Field()
+    dt_refe: date = Field()
+
+
+# Database models
+class Transactions(TransactionsBase, table=True):
+    id: int = Field(primary_key=True)
+    created_at: datetime = Field()
+
+
+class Companies(CompaniesBase, table=True):
+    id: int = Field(primary_key=True)
+    created_at: datetime = Field()
 
 
 # Shared properties
@@ -69,6 +99,15 @@ class Token(SQLModel):
 # JSON payload containing access token
 class CnpjList(BaseModel):
     cnpjs: list[str]
+
+
+# JSON payload containing access token
+class MomentResponse(BaseModel):
+    moment: str
+    problem: str
+    saldo: list[int]
+    faturamento: list[int]
+    data: list[str]
 
 
 # Contents of JWT token

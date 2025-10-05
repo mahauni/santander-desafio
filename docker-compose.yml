@@ -1,27 +1,4 @@
 services:
-  santander-api:
-    container_name: santander-python-api
-    build: .
-    ports:
-      - "5000:80"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    env_file:
-      - .env
-    environment:
-      - DOMAIN=${DOMAIN}
-      - FRONTEND_HOST=${FRONTEND_HOST?Variable not set}
-      - ENVIRONMENT=${ENVIRONMENT}
-      - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS}
-      - SECRET_KEY=${SECRET_KEY?Variable not set}
-    networks:
-      - santander
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://0.0.0.0/api/v1/utils/health-check/" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   postgres:
     image: postgres:17
     container_name: postgres
@@ -41,6 +18,82 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
       - POSTGRES_USER=${POSTGRES_USER?Variable not set}
       - POSTGRES_DB=${POSTGRES_DB?Variable not set}
+    networks:
+      - santander
+
+  prestart:
+    image: santander-python-api:latest
+    build:
+      context: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+        restart: true
+    command: bash scripts/prestart.sh
+    env_file:
+      - .env
+    environment:
+      - DOMAIN=${DOMAIN}
+      - FRONTEND_HOST=${FRONTEND_HOST?Variable not set}
+      - ENVIRONMENT=${ENVIRONMENT}
+      - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS}
+      - SECRET_KEY=${SECRET_KEY?Variable not set}
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - NEO4J_URI=${NEO4J_URI}
+      - NEO4J_USERNAME=${NEO4J_USERNAME}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+      - NEO4J_DATABASE=${NEO4J_DATABASE}
+      - AURA_INSTANCEID=${NEO4J_INSTANCEID}
+      - AURA_INSTANCENAME=${NEO4J_INSTANCENAME}
+    networks:
+      - santander
+
+  santander-api:
+    image: santander-python-api:latest
+    build:
+      context: .
+    restart: always
+    container_name: santander-python-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+        restart: true
+      prestart:
+        condition: service_completed_successfully
+    ports:
+      - "5000:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
+    environment:
+      - DOMAIN=${DOMAIN}
+      - FRONTEND_HOST=${FRONTEND_HOST?Variable not set}
+      - ENVIRONMENT=${ENVIRONMENT}
+      - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS}
+      - SECRET_KEY=${SECRET_KEY?Variable not set}
+      - POSTGRES_SERVER=postgres
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER?Variable not set}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
+      - NEO4J_URI=${NEO4J_URI}
+      - NEO4J_USERNAME=${NEO4J_USERNAME}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+      - NEO4J_DATABASE=${NEO4J_DATABASE}
+      - AURA_INSTANCEID=${NEO4J_INSTANCEID}
+      - AURA_INSTANCENAME=${NEO4J_INSTANCENAME}
+    networks:
+      - santander
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://0.0.0.0/api/v1/utils/health-check/" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
   santander:

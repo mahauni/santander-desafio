@@ -1,6 +1,8 @@
-from google import genai
-from google.genai import types
+from typing import cast
 import pandas as pd
+from google import genai
+
+from app.models import MomentResponse
 
 
 def get_data():
@@ -9,7 +11,7 @@ def get_data():
     )
 
 
-def make_company_perfil(gemini: genai.Client, cnpj: str) -> str | None:
+def make_company_perfil(gemini: genai.Client, cnpj: str) -> MomentResponse:
     df = get_data()
 
     company_data = df[df["id"] == cnpj]
@@ -17,20 +19,35 @@ def make_company_perfil(gemini: genai.Client, cnpj: str) -> str | None:
     if company_data.empty:
         raise Exception("No data found")
 
-    prompt = company_data.to_string()
-
-    prompt += "\nCom base nesses dados, qual e o momento de vida da empresa em inicio, expansao, maturidade e declinio"
-
-    response = gemini.models.generate_content(
+    chat = gemini.chats.create(
         model="gemini-2.5-flash",
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            system_instruction="Voce e um analista de empresas tentando descobrir o que elas sao",
+        config=genai.types.GenerateContentConfig(
+            system_instruction="Voce e um analista e voce esta tendano descobrir em qual momento da empresa ela esta, nao coloque voce na resposta",
             stop_sequences=["\n"],
         ),
     )
 
-    return response.text
+    saldo = company_data["vl_sldo"].tolist()
+    faturamento = company_data["vl_fatu"].tolist()
+    data = company_data["dt_refe"].tolist()
+
+    prompt = company_data.to_string()
+
+    prompt += "\nCom base nesses dados, qual e o momento de vida da empresa em inicio, expansao, maturidade e declinio"
+
+    moment = chat.send_message(prompt)
+
+    prompt = "descreva o porque a voce chegou a essa conclusao, falando sobre o porque com alguns dados"
+
+    problem = chat.send_message(prompt)
+
+    return MomentResponse(
+        moment=cast(str, moment.text),
+        problem=cast(str, problem.text),
+        saldo=saldo,
+        faturamento=faturamento,
+        data=data,
+    )
 
 
 def get_all_cnpj_data():

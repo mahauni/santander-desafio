@@ -9,11 +9,13 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
 from sqlmodel import Session
+from neo4j import Session as SessionNeo4j
 
 from app.core import security
 from app.core.config import settings
 from app.core.db import engine
 from app.models import TokenPayload, User
+from app.core.neo4j import driver
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
@@ -25,14 +27,21 @@ def get_db() -> Generator[Session, None, None]:
         yield session
 
 
+def get_neo4j_session() -> Generator[SessionNeo4j, None, None]:
+    with driver.session() as session:
+        yield session
+
+
 @lru_cache(maxsize=1)
-def get_gemini_model() -> genai.Client:
-    return genai.Client(api_key=settings.GEMINI_API_KEY)
+def get_gemini_model() -> Generator[genai.Client, None, None]:
+    with genai.Client(api_key=settings.GEMINI_API_KEY) as client:
+        yield client
 
 
 SessionDep = Annotated[Session, Depends(get_db)]
 TokenDep = Annotated[str, Depends(reusable_oauth2)]
 GeminiDep = Annotated[genai.Client, Depends(get_gemini_model)]
+Neo4jDep = Annotated[SessionNeo4j, Depends(get_neo4j_session)]
 
 
 def get_current_user(session: SessionDep, token: TokenDep) -> User:

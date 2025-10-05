@@ -66,6 +66,14 @@ class Settings(BaseSettings):
             path=self.POSTGRES_DB,
         )
 
+    NEO4J_URI: str
+    NEO4J_USERNAME: str
+    NEO4J_PASSWORD: str
+
+    NEO4J_DATABASE: str
+    AURA_INSTANCEID: str
+    AURA_INSTANCENAME: str
+
     EMAIL_TEST_USER: EmailStr = "admin@gmail.com"
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str

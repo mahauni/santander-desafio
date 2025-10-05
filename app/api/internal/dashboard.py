@@ -5,6 +5,10 @@ def get_data():
     return pd.read_csv("data.csv", comment="#", sep=", ", header=0, engine="python")
 
 
+# how to fix the too many data, when you query the dashboard. it will get all the data in the month that you selected,
+# and when you change the date, you wlil need to reload the data, so this is the way to do it
+
+
 def get_transactions_json():
     df = get_data()
 

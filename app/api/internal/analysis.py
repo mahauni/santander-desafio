@@ -7,6 +7,10 @@ from collections import OrderedDict, deque
 
 from typing import List
 
+from sqlmodel import Session, select
+
+from app.models import Transactions
+
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -39,9 +43,11 @@ def plot_graph(G, show_image_os, imp_points):
 
     A = nx.nx_agraph.to_agraph(G)
 
-    A.node_attr["fixedsize"] = True
-    A.node_attr["height"] = 1.5
-    A.node_attr["width"] = 2.0
+    print("passando para agraph")
+
+    # A.node_attr["fixedsize"] = True
+    # A.node_attr["height"] = 1.5
+    # A.node_attr["width"] = 2.0
     A.node_attr["style"] = "filled"
     # A.node_attr["concentrate"] = True # this will only work without labels
     # A.node_attr["layout"] = "twopi"
@@ -55,9 +61,18 @@ def plot_graph(G, show_image_os, imp_points):
             n.attr["fillcolor"] = point[2]  # type: ignore[attr-defined]
 
     A.write(CURR_DIR + "/../../../dot/graph.dot")
+    print("escrevendo para .dot")
     s = Source.from_file(CURR_DIR + "/../../../dot/graph.dot")
 
-    s.render(CURR_DIR + "/../../../image/graph.gv", format="jpg", view=show_image_os)
+    print("fazendo o render")
+    s.render(
+        CURR_DIR + "/../../../image/graph.gv",
+        format="jpg",
+        # engine="neato",
+        # engine="twopi",
+        engine="sfdp",
+        view=show_image_os,
+    )
 
 
 def get_n_highest_values(data, n=2, order=False):
@@ -68,23 +83,26 @@ def get_n_highest_values(data, n=2, order=False):
     return dict(top)
 
 
-def populate_data(full: bool, node: str, len: int):
+def populate_data(session: Session, node: str, len: int):
     # make later so that it transforms to json, so the transition will be easier
     # if its uses gRPC now its a different problem that i'm wiling to use if I know
     # they use it
-    df = pd.read_csv("data.csv", comment="#", sep=", ", header=0, engine="python")
+    df = pd.read_sql_query(select(Transactions), session.connection())
 
     df = treat_data(df)
 
+    print(df.shape)
+
     G = nx.DiGraph()
     G.add_weighted_edges_from(
-        df[["id_sender", "id_reciever", "value"]]
-        .astype({"id_sender": str, "id_reciever": str, "value": float})
+        df[["id_pgto", "id_rcbe", "vl"]]
+        .astype({"id_pgto": str, "id_rcbe": str, "vl": float})
         .values
     )
 
-    if full:
-        G = treat_graph(G, node, len)
+    G = treat_graph(G, node, len)
+
+    print("chengando aqui")
 
     return G
 
@@ -120,20 +138,22 @@ def treat_graph(G, main_node, n_levels=2):
 
 
 def treat_data(data) -> pd.DataFrame:
-    data["value"] = data["value"].str.lstrip("R$ ")
-    data["value"] = data["value"].str.replace(",", "").astype(float)
+    data["vl"] = data["vl"].str.lstrip("R$ ")
+    data["vl"] = data["vl"].str.replace(",", "").astype(float)
 
-    data = data.groupby(["id_sender", "id_reciever"], as_index=False)["value"].sum()
+    data = data.groupby(["id_pgto", "id_rcbe"], as_index=False)["vl"].sum()
 
     return data
 
 
-def make_analysis(full=False, node="CNPJ_01982", len=2):
-    G = populate_data(full, node, len)
+def make_analysis(session: Session, node: str | None = "CNPJ_01000", len=3):
+    G = populate_data(session, node, len)
 
     # isso aqui eh os nodes que tem a maior quantidade de shortest paths
     centrality = nx.betweenness_centrality(G)
     centrality = get_n_highest_values(centrality)
+
+    print("passando centrality")
 
     # Measures the number of edges connected to a node. Nodes
     # with higher degree centrality are well-connected
@@ -142,10 +162,14 @@ def make_analysis(full=False, node="CNPJ_01982", len=2):
     degree_cent = nx.degree_centrality(G)
     degree_cent = get_n_highest_values(degree_cent)
 
+    print("passando centrality 2")
+
     # Measures how close a node is to all other nodes, based on the shortest paths.
     # Higher closeness centrality means the node can reach others more quickly
     close_cent = nx.closeness_centrality(G)
     close_cent = get_n_highest_values(close_cent)
+
+    print("passando centrality 3")
 
     result = [
         (
@@ -174,8 +198,8 @@ def make_analysis(full=False, node="CNPJ_01982", len=2):
     return result
 
 
-def impact_on_remove(id: int, full=False, node="CNPJ_01982", len=2):
-    G = populate_data(full, node, len)
+def impact_on_remove(session: Session, id: int, node="CNPJ_01982", len=2):
+    G = populate_data(session, node, len)
 
     impact = nx.descendants(G, id)
 
