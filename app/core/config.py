@@ -71,8 +71,8 @@ class Settings(BaseSettings):
     NEO4J_PASSWORD: str
 
     NEO4J_DATABASE: str
-    AURA_INSTANCEID: str
-    AURA_INSTANCENAME: str
+    # AURA_INSTANCEID: str
+    # AURA_INSTANCENAME: str
 
     EMAIL_TEST_USER: EmailStr = "admin@gmail.com"
     FIRST_SUPERUSER: EmailStr

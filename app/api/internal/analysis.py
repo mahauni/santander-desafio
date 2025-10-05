@@ -43,8 +43,6 @@ def plot_graph(G, show_image_os, imp_points):
 
     A = nx.nx_agraph.to_agraph(G)
 
-    print("passando para agraph")
-
     # A.node_attr["fixedsize"] = True
     # A.node_attr["height"] = 1.5
     # A.node_attr["width"] = 2.0
@@ -61,10 +59,8 @@ def plot_graph(G, show_image_os, imp_points):
             n.attr["fillcolor"] = point[2]  # type: ignore[attr-defined]
 
     A.write(CURR_DIR + "/../../../dot/graph.dot")
-    print("escrevendo para .dot")
     s = Source.from_file(CURR_DIR + "/../../../dot/graph.dot")
 
-    print("fazendo o render")
     s.render(
         CURR_DIR + "/../../../image/graph.gv",
         format="jpg",
@@ -91,8 +87,6 @@ def populate_data(session: Session, node: str, len: int):
 
     df = treat_data(df)
 
-    print(df.shape)
-
     G = nx.DiGraph()
     G.add_weighted_edges_from(
         df[["id_pgto", "id_rcbe", "vl"]]
@@ -101,8 +95,6 @@ def populate_data(session: Session, node: str, len: int):
     )
 
     G = treat_graph(G, node, len)
-
-    print("chengando aqui")
 
     return G
 
@@ -146,14 +138,12 @@ def treat_data(data) -> pd.DataFrame:
     return data
 
 
-def make_analysis(session: Session, node: str | None = "CNPJ_01000", len=3):
+def make_analysis(session: Session, node="CNPJ_01000", len=3):
     G = populate_data(session, node, len)
 
     # isso aqui eh os nodes que tem a maior quantidade de shortest paths
     centrality = nx.betweenness_centrality(G)
     centrality = get_n_highest_values(centrality)
-
-    print("passando centrality")
 
     # Measures the number of edges connected to a node. Nodes
     # with higher degree centrality are well-connected
@@ -162,14 +152,10 @@ def make_analysis(session: Session, node: str | None = "CNPJ_01000", len=3):
     degree_cent = nx.degree_centrality(G)
     degree_cent = get_n_highest_values(degree_cent)
 
-    print("passando centrality 2")
-
     # Measures how close a node is to all other nodes, based on the shortest paths.
     # Higher closeness centrality means the node can reach others more quickly
     close_cent = nx.closeness_centrality(G)
     close_cent = get_n_highest_values(close_cent)
-
-    print("passando centrality 3")
 
     result = [
         (

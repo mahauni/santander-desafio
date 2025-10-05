@@ -1,4 +1,5 @@
 from datetime import datetime, date
+from typing import Dict, Sequence
 import uuid
 
 from pydantic import BaseModel, EmailStr
@@ -10,7 +11,7 @@ class TransactionsBase(SQLModel):
     id_pgto: str = Field()
     id_rcbe: str = Field()
     vl: str = Field()
-    ds_tran: str = Field()
+    ds_tran: str = Field(alias="type")
     dt_refe: date = Field()
 
 
@@ -113,6 +114,32 @@ class MomentResponse(BaseModel):
 # Contents of JWT token
 class TokenPayload(SQLModel):
     sub: str | None = None
+
+
+class TransactionsSummary(SQLModel):
+    pix: float = 0.0
+    ted: float = 0.0
+    sistemico: float = 0.0
+    boleto: float = 0.0
+
+
+class TransactionsChart(SQLModel):
+    dates: Dict[date, TransactionsSummary]
+
+
+class TransactionsList(SQLModel):
+    transactions: Sequence[Transactions]
+
+
+class TransactionsTypeCount(SQLModel):
+    pix: int = 0
+    ted: int = 0
+    sistemico: int = 0
+    boleto: int = 0
+
+
+class TransactionsCount(SQLModel):
+    dates: Dict[date, TransactionsTypeCount]
 
 
 class NewPassword(SQLModel):
