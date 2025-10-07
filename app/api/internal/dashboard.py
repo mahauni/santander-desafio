@@ -3,19 +3,38 @@ from typing import Dict
 from sqlmodel import Numeric, Session, text, func, select, cast
 from sqlalchemy import Float
 
-from app.models import Transactions, TransactionsSummary, TransactionsTypeCount
+from app.models import (
+    PaginatedTransactions,
+    Transactions,
+    TransactionsSummary,
+    TransactionsTypeCount,
+)
 
 
-def get_transactions_json(session: Session, start_date: date, end_date: date):
+def get_transactions_json(
+    session: Session, start_date: date, end_date: date, page: int, page_size: int
+) -> PaginatedTransactions:
+    offset = page * page_size
+
+    # Query for total count
+    count_stmt = select(func.count(Transactions.id)).where(  # type: ignore
+        Transactions.dt_refe.between(start_date, end_date)  # type: ignore
+    )
+    total = session.exec(count_stmt).one()
+
     stmt = (
         select(Transactions)
         .where(Transactions.dt_refe.between(start_date, end_date))  # type: ignore
         .order_by(Transactions.dt_refe)  # type: ignore
+        .offset(offset)
+        .limit(page_size)
     )
 
     result = session.exec(stmt).all()
 
-    return result
+    return PaginatedTransactions(
+        data=result, total=total, page=page, page_size=page_size
+    )
 
 
 def get_value_per_types(

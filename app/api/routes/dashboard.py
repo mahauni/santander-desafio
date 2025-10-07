@@ -10,9 +10,9 @@ from app.api.internal.dashboard import (
     get_value_per_types,
 )
 from app.models import (
+    PaginatedTransactions,
     TransactionsChart,
     TransactionsCount,
-    TransactionsList,
     TransactionsSummary,
     CnpjList,
 )
@@ -28,14 +28,18 @@ def get_transactions(
     session: SessionDep,
     start_date: str = Query("2025-05-01", description="start date for the query"),
     end_date: str = Query("2025-05-31", description="end date for the query"),
-) -> TransactionsList:
+    page: int = Query(0, ge=0),
+    page_size: int = Query(20, ge=0, le=100),
+) -> PaginatedTransactions:
     result = get_transactions_json(
         session,
         datetime.strptime(start_date, "%Y-%m-%d").date(),
         datetime.strptime(end_date, "%Y-%m-%d").date(),
+        page,
+        page_size,
     )
 
-    return TransactionsList(transactions=result)
+    return result
 
 
 @router.get("/transactions/type")

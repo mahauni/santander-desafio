@@ -127,6 +127,13 @@ class TransactionsChart(SQLModel):
     dates: Dict[date, TransactionsSummary]
 
 
+class PaginatedTransactions(SQLModel):
+    data: Sequence[Transactions]
+    total: int
+    page: int
+    page_size: int
+
+
 class TransactionsList(SQLModel):
     transactions: Sequence[Transactions]
 
