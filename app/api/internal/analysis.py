@@ -179,7 +179,7 @@ def make_analysis(session: Session, node="CNPJ_01000", len=3):
         ),
     ]
 
-    plot_graph(G, False, result)
+    # plot_graph(G, False, result)
 
     return result
 

@@ -18,8 +18,7 @@ def make_company_perfil(
     chat = gemini.chats.create(
         model="gemini-2.5-flash",
         config=genai.types.GenerateContentConfig(
-            system_instruction="Voce e um analista e voce esta tendano descobrir em qual momento da empresa ela esta, nao coloque voce na resposta",
-            stop_sequences=["\n"],
+            system_instruction="Voce e um analista e voce esta tendano descobrir em qual momento da empresa ela esta, nao coloque voce na resposta e placeholders como ** empresa ** ou nome de tabela",
         ),
     )
 

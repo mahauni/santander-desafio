@@ -1,5 +1,4 @@
 from collections.abc import Generator
-from functools import lru_cache
 from typing import Annotated
 
 from google import genai
@@ -32,7 +31,6 @@ def get_neo4j_session() -> Generator[SessionNeo4j, None, None]:
         yield session
 
 
-@lru_cache(maxsize=1)
 def get_gemini_model() -> Generator[genai.Client, None, None]:
     with genai.Client(api_key=settings.GEMINI_API_KEY) as client:
         yield client
